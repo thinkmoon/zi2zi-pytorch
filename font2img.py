@@ -83,14 +83,19 @@ def draw_single_char(ch, font, canvas_size, x_offset=0, y_offset=0):
 
 def draw_font2font_example(ch, src_font, dst_font, canvas_size, x_offset, y_offset, filter_hashes):
     dst_img = draw_single_char(ch, dst_font, canvas_size, x_offset, y_offset)
+    if dst_img is None:
+        print("draw fail at char: %s" % (ch))
+        return None
     # check the filter example in the hashes or not
     dst_hash = hash(dst_img.tobytes())
     if dst_hash in filter_hashes:
         return None
     src_img = draw_single_char(ch, src_font, canvas_size, x_offset, y_offset)
+    if src_img is None:
+        return None
     example_img = Image.new("RGB", (canvas_size * 2, canvas_size), (255, 255, 255))
-    example_img.paste(dst_img, (0, 0))
-    example_img.paste(src_img, (canvas_size, 0))
+    example_img.paste(dst_img, (0, 0, canvas_size, canvas_size)) 
+    example_img.paste(src_img, (canvas_size, 0, canvas_size * 2, canvas_size))
     # convert to gray img
     example_img = example_img.convert('L')
     return example_img
@@ -128,7 +133,8 @@ def filter_recurring_hash(charset, font, canvas_size, x_offset, y_offset):
     hash_count = collections.defaultdict(int)
     for c in sample:
         img = draw_single_char(c, font, canvas_size, x_offset, y_offset)
-        hash_count[hash(img.tobytes())] += 1
+        if img is not None:
+            hash_count[hash(img.tobytes())] += 1   
     recurring_hashes = filter(lambda d: d[1] > 2, hash_count.items())
     return [rh[0] for rh in recurring_hashes]
 
@@ -162,17 +168,19 @@ def font2imgs(src, dst, char_size, canvas_size,
 
     # -*- You should fill the target imgs' label_map -*-
     writer_dict = {
-        '智永': 0, ' 隸書-趙之謙': 1, '張即之': 2, '張猛龍碑': 3, '柳公權': 4, '標楷體-手寫': 5, '歐陽詢-九成宮': 6,
-        '歐陽詢-皇甫誕': 7, '沈尹默': 8, '美工-崩雲體': 9, '美工-瘦顏體': 10, '虞世南': 11, '行書-傅山': 12, '行書-王壯為': 13,
-        '行書-王鐸': 14, '行書-米芾': 15, '行書-趙孟頫': 16, '行書-鄭板橋': 17, '行書-集字聖教序': 18, '褚遂良': 19, '趙之謙': 20,
-        '趙孟頫三門記體': 21, '隸書-伊秉綬': 22, '隸書-何紹基': 23, '隸書-鄧石如': 24, '隸書-金農': 25,  '顏真卿-顏勤禮碑': 26,
-        '顏真卿多寶塔體': 27, '魏碑': 28
+        'a': 0,
+        'b': 1,
+        'c': 2,
+        'd': 3,
+        'e': 4,
+        'f': 5,
+        'g': 6
     }
     count = 0
 
     # -*- You should fill the target imgs' regular expressions. -*-
     pattern = re.compile('(.)~(.+)~(\d+)')
-
+    print(dst)
     for c in tqdm(os.listdir(dst)):
         if count == sample_count:
             break

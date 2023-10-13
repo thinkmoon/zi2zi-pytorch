@@ -152,3 +152,6 @@ output/
 
 # font_output
 fonts_output/
+dir/
+font/
+binary_save_directory/

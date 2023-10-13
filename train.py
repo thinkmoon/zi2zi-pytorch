@@ -79,13 +79,14 @@ def main():
     model.setup()
     model.print_networks(True)
     if args.resume:
+        print(f'继续上次训练, checkponit: {args.resume}')
         model.load_networks(args.resume)
 
     # val dataset load only once, no shuffle
     val_dataset = DatasetFromObj(os.path.join(data_dir, 'val.obj'), input_nc=args.input_nc)
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
 
-    global_steps = 0
+    global_steps = int(args.resume + 1)
 
     for epoch in range(args.epoch):
         # generate train dataset every epoch so that different styles of saved char imgs can be trained.
@@ -106,7 +107,7 @@ def main():
                 passed = time.time() - start_time
                 log_format = "Epoch: [%2d], [%4d/%4d] time: %4.2f, d_loss: %.5f, g_loss: %.5f, " + \
                              "category_loss: %.5f, cheat_loss: %.5f, const_loss: %.5f, l1_loss: %.5f"
-                print(log_format % (epoch, bid, total_batches, passed, model.d_loss.item(), model.g_loss.item(),
+                print(log_format % (global_steps + epoch, bid, total_batches, passed, model.d_loss.item(), model.g_loss.item(),
                                     category_loss, cheat_loss, const_loss, l1_loss))
             if global_steps % args.checkpoint_steps == 0:
                 model.save_networks(global_steps)

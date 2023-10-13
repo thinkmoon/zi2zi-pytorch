@@ -51,15 +51,7 @@ To avoid IO bottleneck, preprocessing is necessary to pickle your data into bina
 First run the below command to get the font images:
 
 ```sh
-python font2img.py --src_font=src.ttf
-                   --dst_font=trg.otf
-                   --charset=CN
-                   --sample_count=1000
-                   --sample_dir=dir
-                   --label=0
-                   --filter
-                   --shuffle
-                   --mode=font2font
+python font2img.py --src_font=font/base.ttf --dst_font=font/a.ttf --charset=CN --sample_count=3000 --sample_dir=dir --label=0 --filter --shuffle --mode=font2font
 ```
 Four default charsets are offered: CN, CN_T(traditional), JP, KR. You can also point it to a one line file, it will generate the images of the characters in it. Note, **filter** option is highly recommended, it will pre sample some characters and filter all the images that have the same hash, usually indicating that character is missing. **label** indicating index in the category embeddings that this font associated with, default to 0.
 
@@ -158,9 +150,7 @@ Refer to `imgs2imgs` function (**font2img.py**, line 146) for more details. Also
 After obtaining all images, run **package.py** to pickle the images and their corresponding labels into binary format:
 
 ```sh
-python package.py --dir=image_directories
-                  --save_dir=binary_save_directory
-                  --split_ratio=[0,1]
+python package.py --dir=dir --save_dir=binary_save_directory --split_ratio=0.2
 ```
 
 After running this, you will find two objects **train.obj** and **val.obj** under the **--save_dir** for training and validation, respectively.
@@ -187,12 +177,7 @@ Create a **experiment** directory under the root of the project, and a data dire
 To start training run the following command
 
 ```sh
-python train.py --experiment_dir=experiment 
-				--gpu_ids=cuda:0 
-                --batch_size=32 
-                --epoch=100
-                --sample_steps=200 
-                --checkpoint_steps=500
+python train.py --experiment_dir=experiment --gpu_ids=cuda:0 --batch_size=32 --epoch=10000 --sample_steps=200 --checkpoint_steps=200 --input_nc 1 --resume 500
 ```
 **schedule** here means in between how many epochs, the learning rate will decay by half. The train command will create **sample,logs,checkpoint** directory under **experiment_dir** if non-existed, where you can check and manage the progress of your training.
 
@@ -204,11 +189,7 @@ During the training, you will find two or several checkpoint files **N_net_G.pth
 After training is done, run the below command to infer test data:
 
 ```sh
-python infer.py --experiment_dir experiment
-                --batch_size 32
-                --gpu_ids cuda:0 
-                --resume {the saved model you select}
-                --obj_pth obj_path
+python infer.py --experiment_dir experiment --batch_size 32 --gpu_ids cuda:0 --resume 500
 ```
 
 For example, if you want use the model **100_net_G.pth** and **100_net_D.pth** , which trained with 100 steps, you should use **--resume=100**. 
