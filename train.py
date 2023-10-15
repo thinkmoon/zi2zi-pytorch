@@ -84,13 +84,15 @@ def main():
 
     if args.resume:
         print(f'继续上次训练, checkpoint: {args.resume}')
-        global_epoch = int(args.resume + 1)
+        global_epoch = int(args.resume)
         model.load_networks(args.resume)
 
     # val dataset load only once, no shuffle
     val_dataset = DatasetFromObj(os.path.join(data_dir, 'val.obj'), input_nc=args.input_nc)
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
-
+    for vbid, val_batch in enumerate(val_dataloader):
+        model.sample(val_batch, os.path.join(sample_dir, str(global_epoch)))
+    print("Sample: sample step %d" % global_epoch)
 
     for epoch in range(args.epoch):
         # generate train dataset every epoch so that different styles of saved char imgs can be trained.
