@@ -80,11 +80,11 @@ def main():
     model.setup()
     model.print_networks(True)
 
-    global_steps = 0
+    global_epoch = 0
 
     if args.resume:
         print(f'继续上次训练, checkpoint: {args.resume}')
-        global_steps = int(args.resume + 1)
+        global_epoch = int(args.resume + 1)
         model.load_networks(args.resume)
 
     # val dataset load only once, no shuffle
@@ -111,22 +111,22 @@ def main():
             start_time = time.time()
             log_format = "Epoch: [%2d], [%4d/%4d] time: %4.2f, d_loss: %.5f, g_loss: %.5f, " + \
                             "category_loss: %.5f, cheat_loss: %.5f, const_loss: %.5f, l1_loss: %.5f"
-            print(log_format % (global_steps, bid, total_batches, passed, model.d_loss.item(), model.g_loss.item(),
+            print(log_format % (global_epoch, bid, total_batches, passed, model.d_loss.item(), model.g_loss.item(),
                                 category_loss, cheat_loss, const_loss, l1_loss), end="\r", flush=True)
-            if global_steps % args.checkpoint_steps == 0:
-                model.save_networks(global_steps)
-                print("Checkpoint: save checkpoint step %d" % global_steps)
-            if global_steps % args.sample_steps == 0:
-                for vbid, val_batch in enumerate(val_dataloader):
-                    model.sample(val_batch, os.path.join(sample_dir, str(global_steps)))
-                print("Sample: sample step %d" % global_steps)
-            global_steps += 1
         if (epoch + 1) % args.schedule == 0:
             model.update_lr()
+        if epoch % args.checkpoint_steps == 0:
+                model.save_networks(global_epoch)
+                print("Checkpoint: save checkpoint step %d" % global_epoch)
+        if epoch % args.sample_steps == 0:
+            for vbid, val_batch in enumerate(val_dataloader):
+                model.sample(val_batch, os.path.join(sample_dir, str(global_epoch)))
+            print("Sample: sample step %d" % global_epoch)
+        global_epoch += 1
     for vbid, val_batch in enumerate(val_dataloader):
-        model.sample(val_batch, os.path.join(sample_dir, str(global_steps)))
-        print("Checkpoint: save checkpoint step %d" % global_steps)
-    model.save_networks(global_steps)
+        model.sample(val_batch, os.path.join(sample_dir, str(global_epoch)))
+        print("Checkpoint: save checkpoint step %d" % global_epoch)
+    model.save_networks(global_epoch)
 
 
 if __name__ == '__main__':
