@@ -157,6 +157,7 @@ def font2font(src, dst, charset, char_size, canvas_size,
         e = draw_font2font_example(c, src_font, dst_font, canvas_size, x_offset, y_offset, filter_hashes)
         if e:
             e.save(os.path.join(sample_dir, "%d_%04d.jpg" % (label, count)))
+            print(f'保存： {c}')
             count += 1
             if count % 500 == 0:
                 print("processed %d chars" % count)
@@ -341,6 +342,7 @@ if __name__ == "__main__":
             charset = locals().get("%s_CHARSET" % args.charset)
         else:
             charset = list(open(args.charset, encoding='utf-8').readline().strip())
+            print(charset)
         if args.shuffle:
             np.random.shuffle(charset)
         font2font(args.src_font, args.dst_font, charset, args.char_size,
