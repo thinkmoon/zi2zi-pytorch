@@ -118,10 +118,10 @@ def main():
         if (epoch + 1) % args.schedule == 0:
             model.update_lr()
         global_epoch += 1
-        if epoch % args.checkpoint_steps == 0:
+        if global_epoch % args.checkpoint_steps == 0:
                 model.save_networks(global_epoch)
                 print("Checkpoint: save checkpoint step %d" % global_epoch)
-        if epoch % args.sample_steps == 0:
+        if global_epoch % args.sample_steps == 0:
             for vbid, val_batch in enumerate(val_dataloader):
                 model.sample(val_batch, os.path.join(sample_dir, str(global_epoch)))
             print("Sample: sample step %d" % global_epoch)
