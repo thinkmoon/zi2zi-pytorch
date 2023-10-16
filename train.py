@@ -113,7 +113,7 @@ def main():
             start_time = time.time()
             log_format = "\rEpoch: [%2d], [%4d/%4d] time: %4.2f, d_loss: %.5f, g_loss: %.5f, " + \
                             "category_loss: %.5f, cheat_loss: %.5f, const_loss: %.5f, l1_loss: %.5f"
-            print(log_format % (global_epoch, bid, total_batches, passed, model.d_loss.item(), model.g_loss.item(),
+            print(log_format % (global_epoch, bid + 1, total_batches, passed, model.d_loss.item(), model.g_loss.item(),
                                 category_loss, cheat_loss, const_loss, l1_loss), end="", flush=True)
         if (epoch + 1) % args.schedule == 0:
             model.update_lr()
