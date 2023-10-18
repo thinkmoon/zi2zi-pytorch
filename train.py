@@ -95,6 +95,7 @@ def main():
     print("Sample: sample step %d" % global_epoch)
 
     for epoch in range(args.epoch):
+        start_time = time.time()
         # generate train dataset every epoch so that different styles of saved char imgs can be trained.
         train_dataset = DatasetFromObj(
             os.path.join(data_dir, 'train.obj'),
@@ -110,7 +111,6 @@ def main():
             model.set_input(batch[0], batch[2], batch[1])
             const_loss, l1_loss, category_loss, cheat_loss = model.optimize_parameters()
             passed = time.time() - start_time
-            start_time = time.time()
             log_format = "\rEpoch: [%2d], [%4d/%4d] time: %4.2f, d_loss: %.5f, g_loss: %.5f, " + \
                             "category_loss: %.5f, cheat_loss: %.5f, const_loss: %.5f, l1_loss: %.5f"
             print(log_format % (global_epoch, bid + 1, total_batches, passed, model.d_loss.item(), model.g_loss.item(),
