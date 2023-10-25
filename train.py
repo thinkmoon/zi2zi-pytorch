@@ -91,7 +91,7 @@ def main():
     val_dataset = DatasetFromObj(os.path.join(data_dir, 'val.obj'), input_nc=args.input_nc)
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
     for vbid, val_batch in enumerate(val_dataloader):
-        model.sample(val_batch, os.path.join(sample_dir, str(global_epoch)))
+        model.sample(vbid, val_batch, os.path.join(sample_dir, str(global_epoch)))
     print("Sample: sample step %d" % global_epoch)
 
     for epoch in range(args.epoch):
@@ -123,10 +123,10 @@ def main():
                 print("Checkpoint: save checkpoint step %d" % global_epoch)
         if global_epoch % args.sample_steps == 0:
             for vbid, val_batch in enumerate(val_dataloader):
-                model.sample(val_batch, os.path.join(sample_dir, str(global_epoch)))
+                model.sample(vbid, val_batch, os.path.join(sample_dir, str(global_epoch)))
             print("Sample: sample step %d" % global_epoch)
     for vbid, val_batch in enumerate(val_dataloader):
-        model.sample(val_batch, os.path.join(sample_dir, str(global_epoch)))
+        model.sample(vbid, val_batch, os.path.join(sample_dir, str(global_epoch)))
         print("Checkpoint: save checkpoint step %d" % global_epoch)
     model.save_networks(global_epoch)
 
