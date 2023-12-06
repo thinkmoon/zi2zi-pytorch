@@ -8,6 +8,8 @@ import argparse
 import torch
 import random
 import time
+from PIL import Image  
+import os  
 import math
 
 parser = argparse.ArgumentParser(description='Train')
@@ -49,6 +51,41 @@ parser.add_argument('--input_nc', type=int, default=3,
 def chkormakedir(path):
     if not os.path.isdir(path):
         os.mkdir(path)
+
+def genSample(sample_path, epoch):
+    dir_path = sample_path + '/' + epoch + '/0'
+    print(dir_path)
+    # 获取目录下所有图片的文件名  
+    image_files = [f for f in os.listdir(dir_path) if f.endswith('.jpg') or f.endswith('.png')]  
+    
+    # 打开第一张图片，获取图片宽度和高度  
+    with Image.open(os.path.join(dir_path, image_files[0])) as im:  
+        width, height = im.size  
+    
+    # 创建一个新的空白图片，用于拼接所有图片  
+    result_image = Image.new('RGB', (width * 5, height * math.ceil(len(image_files) / 5)))
+    
+    # 将每张图片拼接到结果图片上  
+    images_this_row = []  
+    line = 0
+    for i, image_file in enumerate(image_files):  
+        images_this_row.append(image_file) 
+        if len(images_this_row) == 5:  # 每五张图片一行  
+            for j in range(5):  # 将这五张图片拷贝到结果图片中  
+                img = Image.open(os.path.join(dir_path, image_files[i - j]))  # 注意：这里使用i-j是因为图片是倒序存储的  
+                result_image.paste(img, (j * width, line * height))  
+            images_this_row = []  # 清空当前行  
+            line = line + 1
+            
+    # 如果还有剩余的图片，将它们添加到最后一行  
+    if images_this_row:  
+        for j in range(len(images_this_row)):  # 将这剩余的图片拷贝到结果图片中  
+            img = Image.open(os.path.join(dir_path, images_this_row[j]))  # 注意：这里使用j是因为图片是倒序存储的  
+            result_image.paste(img, ((len(images_this_row) - j - 1) * width, line * height))  # 注意：这里使用len(images_this_row) - j - 1是因为图片是倒序存储的  
+            
+    # 保存结果图片到文件  
+    result_image.save(sample_path + '/' + epoch + ".png", "PNG")
+    shutil.rmtree(sample_path + '/' + epoch)
 
 def main():
     args = parser.parse_args()
@@ -93,6 +130,7 @@ def main():
     for vbid, val_batch in enumerate(val_dataloader):
         model.sample(vbid, val_batch, os.path.join(sample_dir, str(global_epoch)))
     print("Sample: sample step %d" % global_epoch)
+    genSample(sample_dir,str(global_epoch))
 
     for epoch in range(args.epoch):
         start_time = time.time()

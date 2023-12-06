@@ -132,7 +132,7 @@ def main():
         else:
             # model.set_input(batch[0], batch[2], batch[1])
             # model.optimize_parameters()
-            model.sample(batch, infer_dir)
+            model.sample(0, batch, infer_dir)
             global_steps += 1
 
     t_finish = time.time()
