@@ -77,7 +77,7 @@ def draw_single_char(ch, font, canvas_size, x_offset=0, y_offset=0):
     # img = nn.ZeroPad2d(m)(img) #直接填0
     img = img.squeeze(0)  # 去轴
     img = transforms.ToPILImage()(img)
-    img = img.resize((canvas_size, canvas_size), Image.ANTIALIAS)
+    img = img.resize((canvas_size, canvas_size), Image.LANCZOS)
     return img
 
 
@@ -103,7 +103,7 @@ def draw_font2font_example(ch, src_font, dst_font, canvas_size, x_offset, y_offs
 
 def draw_font2imgs_example(ch, src_font, dst_img, canvas_size, x_offset, y_offset):
     src_img = draw_single_char(ch, src_font, canvas_size, x_offset, y_offset)
-    dst_img = dst_img.resize((canvas_size, canvas_size), Image.ANTIALIAS).convert('RGB')
+    dst_img = dst_img.resize((canvas_size, canvas_size), Image.LANCZOS).convert('RGB')
     example_img = Image.new("RGB", (canvas_size * 2, canvas_size), (255, 255, 255))
     example_img.paste(dst_img, (0, 0))
     example_img.paste(src_img, (canvas_size, 0))
@@ -113,8 +113,8 @@ def draw_font2imgs_example(ch, src_font, dst_img, canvas_size, x_offset, y_offse
 
 
 def draw_imgs2imgs_example(src_img, dst_img, canvas_size):
-    src_img = src_img.resize((canvas_size, canvas_size), Image.ANTIALIAS).convert('RGB')
-    dst_img = dst_img.resize((canvas_size, canvas_size), Image.ANTIALIAS).convert('RGB')
+    src_img = src_img.resize((canvas_size, canvas_size), Image.LANCZOS).convert('RGB')
+    dst_img = dst_img.resize((canvas_size, canvas_size), Image.LANCZOS).convert('RGB')
     example_img = Image.new("RGB", (canvas_size * 2, canvas_size), (255, 255, 255))
     example_img.paste(dst_img, (0, 0))
     example_img.paste(src_img, (canvas_size, 0))

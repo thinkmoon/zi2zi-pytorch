@@ -68,8 +68,9 @@ class Zi2ZiModel:
         self.l1_loss = nn.L1Loss()
         self.mse = nn.MSELoss()
         self.sigmoid = nn.Sigmoid()
-
+        print('判断是否启用cuda')
         if self.gpu_ids:
+            print('启用cuda')
             self.category_loss.cuda()
             self.real_binary_loss.cuda()
             self.fake_binary_loss.cuda()
@@ -242,6 +243,12 @@ class Zi2ZiModel:
                     net.load_state_dict(torch.load(load_path,map_location=torch.device('cpu')))
                 # net.eval()
         print('load model %d' % epoch)
+
+    def get_sample(self, vid, batch, basename):
+        with torch.no_grad():
+            self.set_input(batch[0], batch[2], batch[1])
+            self.forward()
+            return torch.cat([self.fake_B, self.real_B], 3)
 
     def sample(self, vid, batch, basename):
         chk_mkdir(basename)

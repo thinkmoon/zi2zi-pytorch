@@ -1,5 +1,5 @@
 import shutil
-from data import DatasetFromObj
+from data import FurtherOptimizedDatasetFromObj
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 from model import Zi2ZiModel
@@ -12,6 +12,8 @@ import time
 from PIL import Image  
 import os  
 import math
+
+from memory_profiler import profile
 
 parser = argparse.ArgumentParser(description='Train')
 parser.add_argument('--experiment_dir', required=True,
@@ -88,6 +90,7 @@ def genSample(sample_path, epoch):
     result_image.save(sample_path + '/' + epoch + ".png", "PNG")
     shutil.rmtree(sample_path + '/' + epoch)
 
+@profile
 def main():
     args = parser.parse_args()
     random.seed(args.random_seed)
@@ -125,28 +128,25 @@ def main():
         global_epoch = int(args.resume)
         model.load_networks(args.resume)
 
-    # val dataset load only once, no shuffle
-    val_dataset = DatasetFromObj(os.path.join(data_dir, 'val.obj'), input_nc=args.input_nc)
+    full_dataset = FurtherOptimizedDatasetFromObj(input_nc=args.input_nc)
+    train_ratio = 0.8
+    total_samples = len(full_dataset)
+    train_size = int(train_ratio * total_samples)
+    val_size = total_samples - train_size
+    print(f'训练集大小: {train_size}, 验证集大小: {val_size}')
+    # 使用random_split函数进行分割
+    train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
     val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False)
+    dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+
     # for vbid, val_batch in enumerate(val_dataloader):
     #     model.sample(vbid, val_batch, os.path.join(sample_dir, str(global_epoch)))
     print("Sample: sample step %d" % global_epoch)
     # genSample(sample_dir,str(global_epoch))
 
     for epoch in range(args.epoch):
-        
         start_time = time.time()
-        # generate train dataset every epoch so that different styles of saved char imgs can be trained.
-        train_dataset = DatasetFromObj(
-            os.path.join(data_dir, 'train.obj'),
-            input_nc=args.input_nc,
-            augment=True,
-            bold=False,
-            rotate=False,
-            blur=True,
-        )
         total_batches = math.ceil(len(train_dataset) / args.batch_size)
-        dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
         for bid, batch in enumerate(dataloader):
             model.set_input(batch[0], batch[2], batch[1])
             const_loss, l1_loss, category_loss, cheat_loss = model.optimize_parameters()
